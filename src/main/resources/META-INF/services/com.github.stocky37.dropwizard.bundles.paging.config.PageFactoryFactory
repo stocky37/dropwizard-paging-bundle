@@ -1,0 +1,2 @@
+com.github.stocky37.dropwizard.bundles.paging.config.NumberedPageFactoryFactory
+com.github.stocky37.dropwizard.bundles.paging.config.OffsetPageFactoryFactory

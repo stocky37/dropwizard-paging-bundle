@@ -1,0 +1,5 @@
+gradleLint.alwaysRun = false
+gradleLint.rules += 'all-dependency'
+gradleLint.rules += 'all-nebula-renames'
+gradleLint.rules += 'archaic-wrapper'
+gradleLint.rules += 'duplicate-dependency-class'

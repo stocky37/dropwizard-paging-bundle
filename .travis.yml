@@ -1,0 +1,25 @@
+language: java
+jdk: oraclejdk8
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
+install: true
+before_script:
+  - openssl aes-256-cbc -K $encrypted_52e64639c7dd_key -iv $encrypted_52e64639c7dd_iv -in github_deploy_key.enc -out github_deploy_key -d
+  - eval "$(ssh-agent -s)"
+  - chmod 600 github_deploy_key
+  - ssh-add github_deploy_key
+  - git config --global user.email "travis@travis-ci.org"
+  - git config --global user.name "Travis CI"
+  - chmod +x travis-build.sh gradlew
+script: ./travis-build.sh
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -rf $HOME/.gradle/caches/*/plugin-resolution
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+except:
+  - /^v[0-9]/

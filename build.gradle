@@ -1,0 +1,88 @@
+buildscript {repositories {jcenter()}}
+plugins {
+	id 'java-library'
+	id 'nebula.lint' version '6.8.0'
+	id 'nebula.netflixoss' version '3.5.2'
+	id 'nebula.release' version '4.1.0'
+	id 'nebula.resolution-rules' version '2.4.2'
+	id 'nebula.maven-apache-license' version '4.9.1'
+	id 'io.spring.dependency-management' version '1.0.0.RELEASE'
+}
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+}
+
+group = 'com.github.stocky37.dropwizard-bundles'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+apply from: 'lint.gradle'
+
+contacts {
+	'tom@stockwells.me'
+}
+
+license {
+	excludes(["**/resources/META-INF/**", "**/.gitkeep"])
+	ext.year = Calendar.getInstance().get(Calendar.YEAR)
+	ext.name = 'Tom Stockwell'
+	ext.email = 'tom@stockwells.me'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom 'io.dropwizard:dropwizard-bom:1.0.6'
+	}
+}
+
+dependencies {
+	compile 'io.dropwizard:dropwizard-core'
+	resolutionRules 'com.netflix.nebula:gradle-resolution-rules:latest.release'
+	testCompile 'junit:junit:4.12'
+}
+
+gradle.taskGraph.whenReady {graph ->
+	if(graph.hasTask(':artifactoryPublish')) {
+		tasks.artifactoryPublish.enabled = false
+	}
+	if(graph.hasTask(':bintrayUpload')) {
+		tasks.bintrayUpload.enabled = false
+	}
+	def isSnapshot = !(graph.hasTask(':final') || graph.hasTask(':candidate'))
+	tasks.withType(PublishToMavenRepository) { task ->
+		def isSnapshotRepo = task.repository.name == 'snapshot'
+		if(isSnapshot != isSnapshotRepo) {
+			task.enabled = false
+		}
+	}
+}
+
+tasks.release.dependsOn(tasks.publish)
+
+def getPropOrEnv(String prop) {
+	return hasProperty(prop) ? getProperty(prop) : System.getenv(prop)
+}
+
+publishing {
+	repositories {
+		maven {
+			name 'release'
+			url 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
+			credentials {
+				username getPropOrEnv('ossrhUsername')
+				password getPropOrEnv('ossrhPassword')
+			}
+		}
+
+		maven {
+			name 'snapshot'
+			url 'https://oss.sonatype.org/content/repositories/snapshots'
+			credentials {
+				username getPropOrEnv('ossrhUsername')
+				password getPropOrEnv('ossrhPassword')
+			}
+		}
+	}
+}
