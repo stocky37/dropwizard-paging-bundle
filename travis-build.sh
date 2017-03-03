@@ -21,9 +21,9 @@ build() {
 }
 
 build_branch() {
-#    if [ "$TRAVIS_BRANCH" == "master" ]; then
-        #./gradlew $(scope_from_commit_message) final
-    if [[ $TRAVIS_BRANCH =~ $BRANCH_WHITELIST ]]; then
+    if [ "$TRAVIS_BRANCH" == "master" ]; then
+        ./gradlew $(scope_from_commit_message) final
+    elif [[ $TRAVIS_BRANCH =~ $BRANCH_WHITELIST ]]; then
         ./gradlew $(scope_from_branch) snapshot
     else
         build_default
